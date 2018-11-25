@@ -1,0 +1,23 @@
+NLP Project Phase 1: Dialogue Examples
+Top 10 (manually determined) terms: sushi, healthy, history, fish, food, rice, sashimi, japanese, seafood, recipe
+Initial Dialogue:
+Hello, my name is Zoro. I am here to talk about sushi! What is your name?
+	My name is Brian.
+Hey Brian, do you like sushi?
+	Yes, yes I do.
+Did you know that sushi has roots in Japanese culture and history and has been adapted many times since its inception?
+	No, I did not know that! That is very interesting.
+My favorite type of sushi is nigirizushi (AKA nigiri). What is your favorite type of sushi?
+	I like sashimi!
+Did you know that nigiri and [sashimi] can be made from all types of seafood including: fish, squid, and shellfish?
+	That’s a cool fact!
+My favorite type of fish is fatty tuna, what is yours?
+	I like eating salmon
+[Salmon] tastes great! Did you know that <sushi fact>? 
+	Wow, I did not know that!
+Many sushi recipes can be found online. Have you tried making sushi?
+	No, I haven’t. It looks difficult
+
+Chanh-Brian Nguyen
+Brian Ta
+
