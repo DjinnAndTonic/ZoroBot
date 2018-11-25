@@ -1,6 +1,13 @@
-from textblob import TextBlob
 import random
+import pickle
 import os
+import csv
+import nltk
+from textblob import TextBlob
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import TfidfVectorizer
+import numpy as np
 
 GREETINGS = ('hello', 'hi', 'sup', 'greetings', 'sup', "what's up", 'salutations')
 
@@ -28,6 +35,70 @@ def zoro(sentence):
     return r
 
 
+def tf_idf(sentence):
+
+    csv_path = "train/train.csv"
+    tfidf_vec_path = "train/tfidf_vec.pickle"
+    tfidf_matrix_path = "train/tfidf_matrix.pickle"
+
+    i = 0
+    sentences = []
+
+    sen_set = (sentence, "")
+
+    sentences.append(" No you.")
+    sentences.append(" No you.")
+
+    try:
+        f = open(tfidf_vec_path, 'rb')
+        tfidf_vectorizer = pickle.load(f)
+        f.close()
+
+        f = open(tfidf_matrix_path, 'rb')
+        tfidf_matrix = pickle.load(f)
+        f.close()
+    except:
+        with open(csv_path, "r") as file_sentences:
+            reader = csv.reader(file_sentences, delimiter=',')
+
+            for row in reader:
+                sentences.append(row[0])
+                i += 1
+
+        tfidf_vectorizer = TfidfVectorizer()
+        tfidf_matrix = tfidf_vectorizer.fit_transform(sentences)
+
+        f = open(tfidf_vec_path, 'wb')
+        pickle.dump(tfidf_vectorizer, f)
+        f.close()
+
+        f = open(tfidf_matrix_path, 'wb')
+        pickle.dump(tfidf_matrix, f)
+        f.close()
+
+    tfidf_matrix_user = tfidf_vectorizer.transform(sen_set)
+    cosine = cosine_similarity(tfidf_matrix_user, tfidf_matrix)
+    cosine = np.delete(cosine, 0)
+    max = cosine.max()
+
+    resp_index = 0
+    if max > 0.7:
+        curr_max = max - 0.01
+        list = np.where(cosine > curr_max)
+        resp_index = random.choice(list[0])
+    else:
+        return None, None
+
+    j = 0
+    with open(csv_path, "r") as file_sentences:
+        reader = csv.reader(file_sentences, delimiter=',')
+        for row in reader:
+            j += 1
+            if j == resp_index:
+                return row[1], resp_index
+                break
+
+
 def response(sentence):
     cleaned = pronoun_edge(sentence)
     parsed = TextBlob(cleaned)
@@ -40,8 +111,7 @@ def response(sentence):
         resp = greetings(parsed)
 
     if not resp:
-        print()
-        # main chat bot functionality goes here
+        resp, line_id_primary = tf_idf(sentence)
 
     if not resp:
         resp = random.choice(FALLBACK_RESPONSES)
@@ -144,11 +214,10 @@ if __name__ == '__main__':
     #     saying = sys.argv[1]
     # else:
     #     saying = "How are you, brobot?"
-
     while True:
-        x = input()
+        x = input(">: ")
         zoro(x)
-        if x.lower() == 'End':
+        if x.lower() == 'end':
             break
 
 
