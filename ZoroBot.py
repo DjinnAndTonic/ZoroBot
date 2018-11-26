@@ -152,7 +152,7 @@ def makefile(sentence, username):
     like_file = open(path2 + '/likes.txt', 'a+', encoding='utf8')
     dislike_file = open(path2 + '/dislikes.txt', 'a+', encoding='utf8')
 
-    if any(word in sent_nopunct for word in TRIGGER) and 'you' not in sent_nopunct:
+    if any(word in sent_nopunct for word in TRIGGER) and 'you' not in sent_nopunct and sent_nopunct.split()[-1] != 'like':
         pos_tags = nltk.pos_tag(tokens)
 
         dobj = ''
