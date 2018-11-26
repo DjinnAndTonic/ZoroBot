@@ -128,18 +128,19 @@ def tf_idf(sentence):
 def custom_dialog(sentence, user_dir):
 
     sen_set = (sentence, "")
-
-    f = open("userdata/{}/likes.txt".format(user_dir), "r")
     likes = []
-    for word in f.readlines():
-        if word != '\n':
-            likes.append(word.replace('\n', ''))
-
-    f = open("userdata/{}/dislikes.txt".format(user_dir), "r")
     dislikes = []
-    for word in f.readlines():
-        if word != '\n':
-            dislikes.append(word.replace('\n', ''))
+
+    if os.path.isfile("userdata/{}/likes.txt".format(user_dir)):
+        f = open("userdata/{}/likes.txt".format(user_dir), "r")
+        for word in f.readlines():
+            if word != '\n':
+                likes.append(word.replace('\n', ''))
+    if os.path.isfile("userdata/{}/dislikes.txt".format(user_dir)):
+        f = open("userdata/{}/dislikes.txt".format(user_dir), "r")
+        for word in f.readlines():
+            if word != '\n':
+                dislikes.append(word.replace('\n', ''))
 
     tfidf_vectorizer = TfidfVectorizer()
     tfidf_matrix = tfidf_vectorizer.fit_transform(LIKES_DISLIKES)
@@ -147,18 +148,19 @@ def custom_dialog(sentence, user_dir):
     tfidf_matrix_user = tfidf_vectorizer.transform(sen_set)
     cosine = cosine_similarity(tfidf_matrix_user, tfidf_matrix)
     cosine = np.delete(cosine, 0)
-    max = cosine.max()
+    like_max = cosine.max()
 
-    if max > 0.7:
-        if likes and dislikes:
-            if random.choice([True, False]):
-                return "Based on previous encounters, I know you like {}!".format(random.choice(likes))
-            else:
-                return "Based on previous encounters, I know that you dislike {}!".format(random.choice(dislikes))
-        elif likes:
-            return "Based on previous encounters, I know you like {}!".format(random.choice(likes))
-        elif dislikes:
-            return "Based on previous encounters, I know that you dislike {}!".format(random.choice(dislikes))
+    tfidf_matrix = tfidf_vectorizer.fit_transform(DISLIKE_PHRASES)
+    tfidf_matrix_user = tfidf_vectorizer.transform(sen_set)
+
+    cosine2 = cosine_similarity(tfidf_matrix_user, tfidf_matrix)
+    cosine2 = np.delete(cosine2, 0)
+    dislike_max = cosine2.max()
+
+    if like_max > 0.9:
+        return "Based on previous encounters, I know you like {}!".format(random.choice(likes))
+    elif dislike_max > 0.95:
+        return "Based on previous encounters, I know that you dislike {}!".format(random.choice(dislikes))
 
 
 def response(sentence, user_dir):
@@ -348,7 +350,7 @@ def self_comment(pronoun, noun, adjective):
         if noun[1] == "NNS":
             re = random.choice(SELF_NOUN_RESPONSES).format(**{'noun': noun[0].lower()})
         else:
-            re = "What do you do with a {}? Don't answer that.".format(noun[0].lower())
+            re = "I didn't understand that."
     elif noun:
         re = "Yes, {} is pretty great!".format(noun[0])
     elif adjective and (not noun or noun[0] not in SUSHI_KEYWORDS):
