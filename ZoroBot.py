@@ -46,7 +46,8 @@ os.environ['JAVAHOME'] = java_path
 
 
 def zoro(sentence):
-    print('Zoro parsing sentence: ' + sentence)
+    print()
+    # print('Zoro parsing sentence: ' + sentence)
     r = response(sentence)
 
     return r
@@ -143,62 +144,47 @@ def response(sentence):
 
 
 def makefile(sentence, username):
-    path2 = path + '/' + username.lower().replace(' ', '-')
+    regex = re.compile('[%s]' % re.escape(string.punctuation))
+    sent_nopunct = regex.sub('', sentence)
+    blob = TextBlob(sentence)
+    tokens = word_tokenize(sent_nopunct)
 
-    if not os.path.exists(path2):
-        os.makedirs(path2)
-    else:
-        regex = re.compile('[%s]' % re.escape(string.punctuation))
-        sent_nopunct = regex.sub('', sentence)
-        blob = TextBlob(sentence)
-        tokens = word_tokenize(sent_nopunct)
+    like_file = open(path2 + '/likes.txt', 'a+', encoding='utf8')
+    dislike_file = open(path2 + '/dislikes.txt', 'a+', encoding='utf8')
 
-        if any(word in sent_nopunct for word in TRIGGER):
-            pos_tags = nltk.pos_tag(tokens)
-            like_file = open(path2 + '/likes.txt', 'a+', encoding='utf8')
-            dislike_file = open(path2 + '/dislikes.txt', 'a+', encoding='utf8')
+    if any(word in sent_nopunct for word in TRIGGER) and 'you' not in sent_nopunct:
+        pos_tags = nltk.pos_tag(tokens)
 
-            neg = 0.0
-            pos = 0.0
+        dobj = ''
+        for x, y in pos_tags:
+            if y == 'NN' or y == 'NNS':
+                dobj = x
 
-            # print('BLOB', blob.sentences[0])
-            # for tok in tokens:
-            #     syn = list(swn.senti_synsets(tok))
-            #     if syn:
-            #         syn = syn[0]
-            #         if(syn == 'don\'t' or syn == 'dont'):
-            #             neg += .5
-            #         neg += syn.neg_score()
-            #         pos += syn.pos_score()
-            # print(blob.sentences[0].sentiment.polarity)
-            dobj = ''
-            for x, y in pos_tags:
-                if y == 'NN' or y == 'NNS':
-                    dobj = x
+        # print(pos_tags)
 
-            # print(pos_tags)
+        polarity = blob.sentences[0].sentiment.polarity
+        if 'dislike' in blob.sentences[0]:
+            polarity -= .5
+        if 'like' in blob.sentences[0]:
+            polarity += .5
+        if 'don\'t' in blob.sentences[0] and 'like' in blob.sentences[0]:
+            polarity -= .6
+        if 'don\'t' in blob.sentences[0] and 'dislike' in blob.sentences[0]:
+            polarity += .6
+        if 'don\'t' in blob.sentences[0] and 'love' in blob.sentences[0]:
+            polarity -= .6
+        if 'don\'t' in blob.sentences[0] and 'hate' in blob.sentences[0]:
+            polarity += .6
 
-            polarity = blob.sentences[0].sentiment.polarity
-            if 'dislike' in blob.sentences[0]:
-                polarity -= .5
-            if 'like' in blob.sentences[0]:
-                polarity += .5
-            if 'don\'t' in blob.sentences[0] and 'like' in blob.sentences[0]:
-                print('FUCK')
-                polarity -= .6
-            if 'don\'t' in blob.sentences[0] and 'dislike' in blob.sentences[0]:
-                polarity += .6
-            if 'don\'t' in blob.sentences[0] and 'love' in blob.sentences[0]:
-                polarity -= .6
-            if 'don\'t' in blob.sentences[0] and 'hate' in blob.sentences[0]:
-                polarity += .6
+        # print(polarity)
 
-            # print(polarity)
+        if polarity >= 0:
+            like_file.write(dobj + '\n')
+        else:
+            dislike_file.write(dobj + '\n')
 
-            if polarity >= 0:
-                like_file.write(dobj + '\n')
-            else:
-                dislike_file.write(dobj + '\n')
+    like_file.close()
+    dislike_file.close()
 
 
 def prompt():
@@ -225,9 +211,7 @@ def prompt():
             recognized = True
 
     name = name.strip()
-    print('Hello, %s!' % name)
 
-    # print(name)
     return name
 
 
@@ -315,7 +299,7 @@ def f_adjective(sentence):
 
 def self_comment(pronoun, noun, adjective):
     re = None
-    print(noun)
+    # print(noun)
     if noun and noun[0] not in SUSHI_KEYWORDS:
         if noun[1] == "NNS":
             re = random.choice(SELF_NOUN_RESPONSES).format(**{'noun': noun[0].lower()})
@@ -337,6 +321,15 @@ if __name__ == '__main__':
         os.makedirs(path)
 
     username = prompt()
+    path2 = path + '/' + username.lower().replace(' ', '-')
+
+    if not os.path.exists(path2):
+        os.makedirs(path2)
+
+    if os.path.exists(path2):
+        print('Welcome back, %s!' % username)
+    else:
+        print('Hello, %s!' % username)
 
     while True:
         x = input(">: ")
