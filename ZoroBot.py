@@ -7,7 +7,6 @@ import string
 import nltk
 from nltk.tag import StanfordNERTagger
 from nltk.tokenize import word_tokenize
-from nltk.corpus import sentiwordnet as swn
 from textblob import TextBlob
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -17,7 +16,7 @@ import numpy as np
 GREETINGS = ('hello', 'hi', 'sup', 'greetings', 'sup', "what's up", 'salutations', 'hey', 'konnichiwa', 'how are you')
 TRIGGER = ('like', 'dislike', 'love', 'hate')
 
-FAREWELL = ('end', 'bye', 'goodbye', 'cya', 'see ya', 'see you', 'farewell', 'later')
+FAREWELL = ('end', 'bye', 'goodbye', 'cya', 'see ya', 'see you', 'farewell', 'later', 'quit')
 
 FAREWELL_RESPONSES = ["It was nice talking to you!",
                       "Goodbye, friend!",
@@ -42,22 +41,19 @@ SELF_ADJ_RESPONSES = ["Oh, {adjective}? Wow.",
 
 LIKES_DISLIKES = ["what do i like?", "do you remember what I like?", "what do you know about me?", "what do you remember about me?"]
 
+DISLIKE_PHRASES = ["What don't I like?",
+                   "What do I hate?",
+                   "What do I dislike"]
+
 SUSHI_KEYWORDS = {"sushi", "fish", "ginger", "japan", "tuna", "salmon", "japanese", "chirashi", "inari", "maki", "futomaki", "hosomaki", "nigiri", "sashimi", "wasabi", "uni", "sea", "urchin", "unagi", "sea urchin", "tobiko", "masago", "roe", "tako", "rice", "roll", "rolls", "shoyu", "nori", "fugu", "gari", "abalone", "amaebi", "akagai", "diets", }
 java_path = './Java/jre1.8.0_191/bin/java.exe'
 os.environ['JAVAHOME'] = java_path
 
 
-<<<<<<< HEAD
-def zoro(sentence):
-    print()
-    # print('Zoro parsing sentence: ' + sentence)
-    r = response(sentence)
-=======
 def zoro(sentence, username):
     user_dir = username.replace(" ", "-").lower()
-    print('Zoro parsing sentence: ' + sentence)
+    # print('Zoro parsing sentence: ' + sentence)
     r = response(sentence, user_dir)
->>>>>>> custom_dialog
 
     return r
 
@@ -76,8 +72,8 @@ def tf_idf(sentence):
 
     sen_set = (sentence, "")
 
-    sentences.append(" No you.")
-    sentences.append(" No you.")
+    sentences.append(" Offset 1.")
+    sentences.append(" Offset 2.")
 
     try:
         f = open(tfidf_vec_path, 'rb')
@@ -200,7 +196,7 @@ def makefile(sentence, username):
     like_file = open(path2 + '/likes.txt', 'a+', encoding='utf8')
     dislike_file = open(path2 + '/dislikes.txt', 'a+', encoding='utf8')
 
-    if any(word in sent_nopunct for word in TRIGGER) and 'you' not in sent_nopunct and sent_nopunct.split()[-1] != 'like':
+    if any(word in sent_nopunct for word in TRIGGER) and 'you' not in sent_nopunct and sent_nopunct.split()[-1] not in TRIGGER:
         pos_tags = nltk.pos_tag(tokens)
 
         dobj = ''
@@ -371,17 +367,16 @@ if __name__ == '__main__':
     username = prompt()
     path2 = path + '/' + username.lower().replace(' ', '-')
 
-    if not os.path.exists(path2):
-        os.makedirs(path2)
-
     if os.path.exists(path2):
-        print('Welcome back, %s!' % username)
+        print('Welcome back, %s!\n' % username)
     else:
-        print('Hello, %s!' % username)
+        os.makedirs(path2)
+        print('Hello, %s!\n' % username)
 
     while True:
         x = input(">: ")
         zoro(x, username)
+        print()
         makefile(x, username)
         if x.lower() in FAREWELL:
             break
