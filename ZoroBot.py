@@ -2,19 +2,31 @@ import random
 import pickle
 import os
 import csv
+import re
+import string
 import nltk
+from nltk.tag import StanfordNERTagger
+from nltk.tokenize import word_tokenize
+from nltk.corpus import sentiwordnet as swn
 from textblob import TextBlob
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 
-GREETINGS = ('hello', 'hi', 'sup', 'greetings', 'sup', "what's up", 'salutations', 'hey', 'konnichiwa')
+GREETINGS = ('hello', 'hi', 'sup', 'greetings', 'sup', "what's up", 'salutations', 'hey', 'konnichiwa', 'how are you')
+TRIGGER = ('like', 'dislike', 'love', 'hate')
+
+FAREWELL = ('end', 'bye', 'goodbye', 'cya', 'see ya', 'see you', 'farewell', 'later')
+
+FAREWELL_RESPONSES = ["It was nice talking to you!",
+                      "Goodbye, friend!",
+                      "Please come back soon :("]
 
 GREETING_RESPONSES = ["Hello, I'm Zoro. I'm here to talk to you about sushi.",
-                      "Greetings, I'm Zoro. What do you want to talk about? Hopefully sushi...",
+                      "Greetings, I'm Zoro! Let's talk about sushi!",
                       "Hi, I'm Zoro. Let's talk about sushi.",
-                      "Howdy! What questions do you have about sushi?"]
+                      "Howdy! I'm Zoro and I like sushi!"]
 
 FALLBACK_RESPONSES = ["I didn't get that. Could you rephrase?",
                       "What was that? I didn't quite catch that.",
@@ -29,15 +41,21 @@ SELF_ADJ_RESPONSES = ["Oh, {adjective}? Wow.",
                       "What does {adjective} mean?"]
 
 SUSHI_KEYWORDS = {"sushi", "fish", "ginger", "japan", "tuna", "salmon", "japanese", "chirashi", "inari", "maki", "futomaki", "hosomaki", "nigiri", "sashimi", "wasabi", "uni", "sea", "urchin", "unagi", "sea urchin", "tobiko", "masago", "roe", "tako", "rice", "roll", "rolls", "shoyu", "nori", "fugu", "gari", "abalone", "amaebi", "akagai", "diets", }
+java_path = './Java/jre1.8.0_191/bin/java.exe'
+os.environ['JAVAHOME'] = java_path
 
 
 def zoro(sentence):
     print('Zoro parsing sentence: ' + sentence)
     r = response(sentence)
+
     return r
 
 
 def tf_idf(sentence):
+    path1 = './train'
+    if not os.path.exists(path1):
+        os.makedirs(path1)
 
     csv_path = "train/train.csv"
     tfidf_vec_path = "train/tfidf_vec.pickle"
@@ -112,12 +130,111 @@ def response(sentence):
     resp = greetings(parsed)
 
     if not resp:
+        resp = farewell(parsed)
+
+    if not resp:
         resp, line_id_primary = tf_idf(sentence.lower())
 
     if not resp:
         resp = self_comment(pronoun, noun, adjective)
     print(resp)
+
     return resp
+
+
+def makefile(sentence, username):
+    path2 = path + '/' + username.lower().replace(' ', '-')
+
+    if not os.path.exists(path2):
+        os.makedirs(path2)
+    else:
+        regex = re.compile('[%s]' % re.escape(string.punctuation))
+        sent_nopunct = regex.sub('', sentence)
+        blob = TextBlob(sentence)
+        tokens = word_tokenize(sent_nopunct)
+
+        if any(word in sent_nopunct for word in TRIGGER):
+            pos_tags = nltk.pos_tag(tokens)
+            like_file = open(path2 + '/likes.txt', 'a+', encoding='utf8')
+            dislike_file = open(path2 + '/dislikes.txt', 'a+', encoding='utf8')
+
+            neg = 0.0
+            pos = 0.0
+
+            # print('BLOB', blob.sentences[0])
+            # for tok in tokens:
+            #     syn = list(swn.senti_synsets(tok))
+            #     if syn:
+            #         syn = syn[0]
+            #         if(syn == 'don\'t' or syn == 'dont'):
+            #             neg += .5
+            #         neg += syn.neg_score()
+            #         pos += syn.pos_score()
+            # print(blob.sentences[0].sentiment.polarity)
+            dobj = ''
+            for x, y in pos_tags:
+                if y == 'NN' or y == 'NNS':
+                    dobj = x
+
+            # print(pos_tags)
+
+            polarity = blob.sentences[0].sentiment.polarity
+            if 'dislike' in blob.sentences[0]:
+                polarity -= .5
+            if 'like' in blob.sentences[0]:
+                polarity += .5
+            if 'don\'t' in blob.sentences[0] and 'like' in blob.sentences[0]:
+                print('FUCK')
+                polarity -= .6
+            if 'don\'t' in blob.sentences[0] and 'dislike' in blob.sentences[0]:
+                polarity += .6
+            if 'don\'t' in blob.sentences[0] and 'love' in blob.sentences[0]:
+                polarity -= .6
+            if 'don\'t' in blob.sentences[0] and 'hate' in blob.sentences[0]:
+                polarity += .6
+
+            # print(polarity)
+
+            if polarity >= 0:
+                like_file.write(dobj + '\n')
+            else:
+                dislike_file.write(dobj + '\n')
+
+
+def prompt():
+    st = StanfordNERTagger('./stanford-ner/classifiers/english.all.3class.distsim.crf.ser.gz',
+                           './stanford-ner/stanford-ner.jar',
+                           encoding='utf-8')
+
+    recognized = False
+
+    while not recognized:
+        username_sentence = input('What\'s your name?\n>:')
+        tokens = word_tokenize(username_sentence)
+        ner_tagged = st.tag(tokens)
+        # print(ner_tagged)
+        name = ''
+        for x,y in ner_tagged:
+            if y == 'PERSON':
+                name += x + ' '
+
+        if not name:
+            recognized = False
+            print('Sorry, I didn\'t get that.')
+        else:
+            recognized = True
+
+    name = name.strip()
+    print('Hello, %s!' % name)
+
+    # print(name)
+    return name
+
+
+def farewell(sentence):
+    for word in sentence.words:
+        if word.lower() in FAREWELL:
+            return random.choice(FAREWELL_RESPONSES)
 
 
 def greetings(sentence):
@@ -150,8 +267,8 @@ def get_pos(parsed):
         noun = f_noun(sentence)
         adjective = f_adjective(sentence)
         verb = f_verb(sentence)
-    print(parsed.pos_tags)
-    print("Pronoun: " + str(pronoun) + " Noun: " + str(noun) + " Adjective: " + str(adjective) + " Verb: " + str(verb))
+    # print(parsed.pos_tags)
+    # print("Pronoun: " + str(pronoun) + " Noun: " + str(noun) + " Adjective: " + str(adjective) + " Verb: " + str(verb))
     return pronoun, noun, adjective, verb
 
 
@@ -214,18 +331,16 @@ def self_comment(pronoun, noun, adjective):
 
 
 if __name__ == '__main__':
-    import sys
-    # Usage:
-    # python broize.py "I am an engineer"
 
-    # if len(sys.argv) > 0:
-    #     saying = sys.argv[1]
-    # else:
-    #     saying = "How are you, brobot?"
+    path = './userdata'
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    username = prompt()
+
     while True:
         x = input(">: ")
         zoro(x)
-        if x.lower() == 'end':
+        makefile(x, username)
+        if x.lower() in FAREWELL:
             break
-
-
