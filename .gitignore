@@ -1,1 +1,2 @@
-train
+train/tfidf_matrix.pickle
+train/tfidf_vec.pickle

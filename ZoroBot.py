@@ -9,7 +9,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 
-GREETINGS = ('hello', 'hi', 'sup', 'greetings', 'sup', "what's up", 'salutations')
+GREETINGS = ('hello', 'hi', 'sup', 'greetings', 'sup', "what's up", 'salutations', 'hey', 'konnichiwa')
 
 GREETING_RESPONSES = ["Hello, I'm Zoro. I'm here to talk to you about sushi.",
                       "Greetings, I'm Zoro. What do you want to talk about? Hopefully sushi...",
@@ -27,6 +27,8 @@ SELF_NOUN_RESPONSES = ["Oh, I don't know much about {noun}",
 
 SELF_ADJ_RESPONSES = ["Oh, {adjective}? Wow.",
                       "What does {adjective} mean?"]
+
+SUSHI_KEYWORDS = {"sushi", "fish", "ginger", "japan", "tuna", "salmon", "japanese", "chirashi", "inari", "maki", "futomaki", "hosomaki", "nigiri", "sashimi", "wasabi", "uni", "sea", "urchin", "unagi", "sea urchin", "tobiko", "masago", "roe", "tako", "rice", "roll", "rolls", "shoyu", "nori", "fugu", "gari", "abalone", "amaebi", "akagai", "diets", }
 
 
 def zoro(sentence):
@@ -82,7 +84,7 @@ def tf_idf(sentence):
     max = cosine.max()
 
     resp_index = 0
-    if max > 0.7:
+    if max > 0.8:
         curr_max = max - 0.01
         list = np.where(cosine > curr_max)
         resp_index = random.choice(list[0])
@@ -105,16 +107,15 @@ def response(sentence):
 
     pronoun, noun, adjective, verb = get_pos(parsed)
 
-    resp = self_comment(pronoun, noun, adjective)
+    # resp = self_comment(pronoun, noun, adjective)
+
+    resp = greetings(parsed)
 
     if not resp:
-        resp = greetings(parsed)
+        resp, line_id_primary = tf_idf(sentence.lower())
 
     if not resp:
-        resp, line_id_primary = tf_idf(sentence)
-
-    if not resp:
-        resp = random.choice(FALLBACK_RESPONSES)
+        resp = self_comment(pronoun, noun, adjective)
     print(resp)
     return resp
 
@@ -180,8 +181,8 @@ def f_noun(sentence):
 
     if not noun:
         for word, pos in sentence.pos_tags:
-            if pos == 'NN':
-                noun = word
+            if (pos == 'NN' or pos == 'NNS' or pos == 'NNP') and word != 'i':
+                noun = (word, pos)
                 break
     return noun
 
@@ -197,11 +198,18 @@ def f_adjective(sentence):
 
 def self_comment(pronoun, noun, adjective):
     re = None
-    if pronoun == 'You' and (noun or adjective):
-        if noun:
-            re = random.choice(SELF_NOUN_RESPONSES).format(**{'noun': noun})
+    print(noun)
+    if noun and noun[0] not in SUSHI_KEYWORDS:
+        if noun[1] == "NNS":
+            re = random.choice(SELF_NOUN_RESPONSES).format(**{'noun': noun[0].lower()})
         else:
-            re = random.choice(SELF_ADJ_RESPONSES).format(**{'adjective': adjective})
+            re = "What do you do with a {}? Don't answer that.".format(noun[0].lower())
+    elif noun:
+        re = "Yes, {} is pretty great!".format(noun[0])
+    elif adjective and (not noun or noun[0] not in SUSHI_KEYWORDS):
+        re = random.choice(SELF_ADJ_RESPONSES).format(**{'adjective': adjective})
+    else:
+        re = random.choice(FALLBACK_RESPONSES)
     return re
 
 
