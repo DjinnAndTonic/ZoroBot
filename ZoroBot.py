@@ -40,15 +40,24 @@ SELF_NOUN_RESPONSES = ["Oh, I don't know much about {noun}",
 SELF_ADJ_RESPONSES = ["Oh, {adjective}? Wow.",
                       "What does {adjective} mean?"]
 
+LIKES_DISLIKES = ["what do i like?", "do you remember what I like?", "what do you know about me?", "what do you remember about me?"]
+
 SUSHI_KEYWORDS = {"sushi", "fish", "ginger", "japan", "tuna", "salmon", "japanese", "chirashi", "inari", "maki", "futomaki", "hosomaki", "nigiri", "sashimi", "wasabi", "uni", "sea", "urchin", "unagi", "sea urchin", "tobiko", "masago", "roe", "tako", "rice", "roll", "rolls", "shoyu", "nori", "fugu", "gari", "abalone", "amaebi", "akagai", "diets", }
 java_path = './Java/jre1.8.0_191/bin/java.exe'
 os.environ['JAVAHOME'] = java_path
 
 
+<<<<<<< HEAD
 def zoro(sentence):
     print()
     # print('Zoro parsing sentence: ' + sentence)
     r = response(sentence)
+=======
+def zoro(sentence, username):
+    user_dir = username.replace(" ", "-").lower()
+    print('Zoro parsing sentence: ' + sentence)
+    r = response(sentence, user_dir)
+>>>>>>> custom_dialog
 
     return r
 
@@ -120,7 +129,43 @@ def tf_idf(sentence):
                 break
 
 
-def response(sentence):
+def custom_dialog(sentence, user_dir):
+
+    sen_set = (sentence, "")
+
+    f = open("userdata/{}/likes.txt".format(user_dir), "r")
+    likes = []
+    for word in f.readlines():
+        if word != '\n':
+            likes.append(word.replace('\n', ''))
+
+    f = open("userdata/{}/dislikes.txt".format(user_dir), "r")
+    dislikes = []
+    for word in f.readlines():
+        if word != '\n':
+            dislikes.append(word.replace('\n', ''))
+
+    tfidf_vectorizer = TfidfVectorizer()
+    tfidf_matrix = tfidf_vectorizer.fit_transform(LIKES_DISLIKES)
+
+    tfidf_matrix_user = tfidf_vectorizer.transform(sen_set)
+    cosine = cosine_similarity(tfidf_matrix_user, tfidf_matrix)
+    cosine = np.delete(cosine, 0)
+    max = cosine.max()
+
+    if max > 0.7:
+        if likes and dislikes:
+            if random.choice([True, False]):
+                return "Based on previous encounters, I know you like {}!".format(random.choice(likes))
+            else:
+                return "Based on previous encounters, I know that you dislike {}!".format(random.choice(dislikes))
+        elif likes:
+            return "Based on previous encounters, I know you like {}!".format(random.choice(likes))
+        elif dislikes:
+            return "Based on previous encounters, I know that you dislike {}!".format(random.choice(dislikes))
+
+
+def response(sentence, user_dir):
     cleaned = pronoun_edge(sentence)
     parsed = TextBlob(cleaned)
 
@@ -129,6 +174,9 @@ def response(sentence):
     # resp = self_comment(pronoun, noun, adjective)
 
     resp = greetings(parsed)
+
+    if not resp:
+        resp = custom_dialog(sentence.lower(), user_dir)
 
     if not resp:
         resp = farewell(parsed)
@@ -333,7 +381,7 @@ if __name__ == '__main__':
 
     while True:
         x = input(">: ")
-        zoro(x)
+        zoro(x, username)
         makefile(x, username)
         if x.lower() in FAREWELL:
             break
