@@ -30,8 +30,14 @@ Sample inputs:
 >>uwu
 >>Goodbye
 
-Criterias:
+Criteria:
+User Data:  Bot remembers if you say something like "I like <x>" or "I hate <x>".
+            Afterwards, if you ask,"do you remember what I like?" or "What do i hate?", 
+            the bot will randomly choose one of the likes you told him about.
 
-User Data: Bot remembers if you say something like "I like <x>" or "I hate <x>". Afterwards, if you ask, "do you remember what I like?" or "What do i hate?" , the bot will randomly choose one of the likes you told him about.
+Knowledge Base: Bot incorporates knowledge through the use of tfidf and
+                training. It does a database look-up and matches to most relative dialog.
 
-Knowledge Base: Bot incorporates knowledge through the use of tfidf and training. It does a database look-up and matches to most relative dialog.
+
+GitHub:
+https://github.com/xToyo/ZoroBot
