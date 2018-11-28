@@ -30,7 +30,7 @@ Sample inputs:
 >>uwu
 >>Goodbye
 
-Criterias:
+Criteria:
 
 User Data: Bot remembers if you say something like "I like <x>" or "I hate <x>". Afterwards, if you ask, "do you remember what I like?" or "What do i hate?" , the bot will randomly choose one of the likes you told him about.
 
