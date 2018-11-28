@@ -37,12 +37,11 @@ SELF_NOUN_RESPONSES = ["Oh, I don't know much about {noun}",
                        "I don't want to talk about {noun}, let's talk about sushi instead."]
 
 SELF_ADJ_RESPONSES = ["Oh, {adjective}? Wow.",
-                      "What does {adjective} mean?"]
+                      "{adjective}!"]
 
-LIKES_DISLIKES = ["what do i like?", "do you remember what I like?", "what do you know about me?", "what do you remember about me?"]
+LIKES_DISLIKES = ["What do i like?", "do you remember what I like?", "what do you know about me?", "what do you remember about me?"]
 
-DISLIKE_PHRASES = ["What don't I like?",
-                   "What do I hate?",
+DISLIKE_PHRASES = ["What do I hate?",
                    "What do I dislike"]
 
 SUSHI_KEYWORDS = {"sushi", "fish", "ginger", "japan", "tuna", "salmon", "japanese", "chirashi", "inari", "maki", "futomaki", "hosomaki", "nigiri", "sashimi", "wasabi", "uni", "sea", "urchin", "unagi", "sea urchin", "tobiko", "masago", "roe", "tako", "rice", "roll", "rolls", "shoyu", "nori", "fugu", "gari", "abalone", "amaebi", "akagai", "diets", }
@@ -147,19 +146,19 @@ def custom_dialog(sentence, user_dir):
 
     tfidf_matrix_user = tfidf_vectorizer.transform(sen_set)
     cosine = cosine_similarity(tfidf_matrix_user, tfidf_matrix)
-    cosine = np.delete(cosine, 0)
+    # cosine = np.delete(cosine, 0)
     like_max = cosine.max()
 
     tfidf_matrix = tfidf_vectorizer.fit_transform(DISLIKE_PHRASES)
     tfidf_matrix_user = tfidf_vectorizer.transform(sen_set)
 
     cosine2 = cosine_similarity(tfidf_matrix_user, tfidf_matrix)
-    cosine2 = np.delete(cosine2, 0)
+    # cosine2 = np.delete(cosine2, 0)
     dislike_max = cosine2.max()
 
-    if like_max > 0.9:
+    if like_max > 0.9 and likes:
         return "Based on previous encounters, I know you like {}!".format(random.choice(likes))
-    elif dislike_max > 0.95:
+    elif dislike_max > 0.95 and dislikes:
         return "Based on previous encounters, I know that you dislike {}!".format(random.choice(dislikes))
 
 

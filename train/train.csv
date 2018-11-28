@@ -22,8 +22,8 @@ Who created sushi?,The invention of sushi (zushi) is credited to Yohei Hanaya
 What are some popular Japanese cuisines?,Sushi!
 What type of tuna is typically used?,Bluefin tuna is the most common type of fish used.
 What kind of tuna is most used?,Bluefin tuna is the most common type of fish used.
-Do you like tuna?,Yes! I love tuna!
-Do you like salmon?,"Yes, but not as much as tuna!"
+Do you like tuna?,Tuna is great!
+Do you like salmon?,"Salmon is pretty good, yes."
 Do you like sushi?,Of course? I wouldn't be Zoro the Sushi Bot otherwise!
 Do you like Japan?,No
 What kind of food is sushi?,The term sushi is used to describe a finger-size piece of raw fish or shellfish on a bed of rice.
@@ -55,7 +55,6 @@ What is Unagi?,"Unagi is a state of total awareness. Also, freshwater eel."
 Is sushi healthy for you?,Sushi is widely known to be healthy! High in protein and low in fat.
 What are some benefits to sushi?,Sushi is high in Omega-3 fatty acids!
 Why are Omega-3 fatty acids good for you?,It is considered quite beneficial to cardiovascular health. The consumption of Omega-3 fatty acids have also been shown to be beneficial to those with type II diabetes!
-I don't like you,I'm not fond of you either!
 What is tobiko?,Tobiko is the roe of tropical flying fish. It is one of the most prized sushi roe!
 What is masago?,"Masago is the roe of Capelin, an Atlantic and Artic fish."
 What is roe?,Roe is the mass of eggs contained in the ovaries of a female fish or shellfish.
@@ -164,8 +163,28 @@ how does one eat sushi?,Sushi can be eaten alone or dipped into Japanese soy sau
 What goes well with sushi?,"Ginger, soy sauce, and wasabi."
 what doesn't go well with sushi?,Lots of stuff.
 what does not go well with sushi?,Lots of stuff.
-what is the most popular sushi dish?,Tuna and salmon nigiri are amoung the most common!
+what is the most popular sushi dish?,Tuna and salmon nigiri are among the most common!
 What goes well with?,Who knows.
 What does not go well with?,Who knows.
 What goes well with sashimi?,"Ginger, soy sauce, and wasabi."
 what doesn't go well with sashimi?,Lots of stuff.
+Why does sushi come in pairs?,"While sushi itself is not a part of a low-carb diet or lifestyle due to the amount of carbohydrates in the rice, sashimi is perfectly fine since it is only fish without rice or nori."
+what kinds of fish are on sushi?,Tuna and salmon are among the most common!
+what type of fish is on sushi?,Tuna and salmon are among the most common!
+what kinds of sushi are there?,"Some kinds of sushi include nigiri, sashimi, rolls, and chirashi"
+what is the history of sushi?,Sushi was invented around the 19th century.
+what are the different kinds of sushi?,"Some kinds of sushi include nigiri, sashimi, rolls, and chirashi"
+Is sushi korean,nope!
+is sushi japanese?,"yes, it can be considered so."
+Can i eat raw fish?,"Yes, it's totally fine in appropiate amounts."
+do you think i'll like sushi?,I hope so!
+I like ,Interesting.
+I dislike,Intriguing.
+I hate,I see.
+I love,Good to know.
+what do I like?,I'm not sure!
+do you remember what I like?,I'm not sure!
+what do you know about me?,I'm not sure!
+what do you remember about me?,I'm not sure!
+what do I hate?,I'm not sure!
+what do I dislike?,
